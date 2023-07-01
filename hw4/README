@@ -1,0 +1,27 @@
+Homework 3: Lighting and Textures
+
+Khaled hossain
+CSCI4229/5229 Summer 2023
+
+
+Demonstrates using lighting and textures.
+
+
+Key bindings
+  l          Toggle lighting on/off
+  t          Change textures
+  m          Toggles texture mode modulate/replace
+  a/A        decrease/increase ambient light
+  d/D        decrease/increase diffuse light
+  s/S        decrease/increase specular light
+  e/E        decrease/increase emitted light
+  n/N        Decrease/increase shininess
+  o          Cycles through objects
+  []         Lower/rise light
+  x          Toggle axes
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit
+
+Time taken to complete 10 hours

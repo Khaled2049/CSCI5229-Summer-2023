@@ -46,6 +46,14 @@ int t_mode = 0;
 int obj=0;
 double groundWidth = 16.0;
 double groundLength = 9.0;
+float time=0;  // Elapsed time
+int levelmax = 9; // maximum level of recursion
+int nleaf = 2; // number of leafs per branch
+float openness = 4.5; // controls how open the leafs are
+float factor = 1.5; // controls how fast branch sizes decrease
+float zoom = 1; // zoom of visualization
+float offset = 0; // controls how crooked branches are   
+
 
 void cylinder(float radius,float height,
                    float R, float G,float B, unsigned int texture){
@@ -82,6 +90,37 @@ void cylinder(float radius,float height,
       glTexCoord2f(0.0, 0.0); glVertex3f(radius, 0.0, 0.0);
    }
    glEnd(); 
+}
+
+void drawSeat() {
+   //  Offset, scale and rotate
+
+   if (ntex<0)
+      glDisable(GL_TEXTURE_2D);
+   else
+   {
+      glEnable(GL_TEXTURE_2D);
+   }
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,t_mode?GL_REPLACE:GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[3]);
+
+   // Seat Top
+   glPushMatrix();
+   glTranslated(0,1,0);
+   glRotated(-90.0,1,0,0);
+   cylinder(0.75, 0.25, 0,0,0, texture[3]);
+   glPopMatrix();  
+   
+   // Seat Bottom
+   glPushMatrix();
+   glTranslated(0,0,0);
+   glRotated(-90.0,1,0,0);
+   cylinder(0.25, 1.0, 0,0,0, texture[4]);
+   glPopMatrix();  
+
+   glFlush();    
+   glDisable(GL_TEXTURE_2D);
+
 }
 
 void drawCone(double height, double radius, double r, double g, double b, unsigned int texture)
@@ -577,6 +616,168 @@ void drawWindow()
    glDisable(GL_BLEND); 
 }
 
+#define PI 3.14159265358979323846
+#define BASE_RADIUS 0.5
+#define TOP_RADIUS 0.2
+#define HEIGHT 1.0
+#define SEGMENTS 50
+
+void drawVase(double x, double y, double z, double r, double emi, double sc, double rh){
+    
+    int th,ph;
+    float Emission1[] = {Sin(emi),Sin(emi),Sin(emi),1};    
+
+    // Draw body
+    glMaterialfv(GL_FRONT,GL_EMISSION,Emission1);
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,2*sc,sc);
+
+    glColor3f(0,0,0);
+
+    for (ph=-90;ph<90;ph+=5)
+    {
+        glBegin(GL_QUAD_STRIP);
+        for (th=0;th<=360;th+=2*5)
+        {
+            Vertex(th,ph,(r-1.5));
+            Vertex(th,ph+5,(r-1.5));
+        }
+        glEnd();
+    }
+    glPopMatrix();
+
+   // top stem
+   glPushMatrix();
+   glTranslated(0,0,0);
+   glRotated(-90.0,1,0,0);   
+   cylinder(0.5,3, 0, 0, 0, texture[3]);
+   glPopMatrix();
+
+   // top top
+   glPushMatrix();
+   glTranslated(0, 3,0);
+   glRotated(-90.0,1,0,0);   
+   cylinder(0.75,0.8, 0, 0, 0, texture[3]);
+   glPopMatrix();
+   
+   // bottom
+   glPushMatrix();
+   glTranslated(0,-2,0);
+   glRotated(-90.0,1,0,0);   
+   cylinder(0.75,1, 0, 0, 0, texture[3]);
+   glPopMatrix();
+
+}
+
+
+void drawChandelier(double x, double y, double z, double r, double emi, double sc, double rh){
+    
+    int th,ph;
+    float Emission1[] = {Sin(emi),Sin(emi),Sin(emi),1};
+    float Emission2[] = {Cos(emi),Cos(emi),Cos(emi),1};
+    float Emission3[] = {0,0,0,1};
+
+    // Draw core
+    glMaterialfv(GL_FRONT,GL_EMISSION,Emission1);
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,2*sc,sc);
+
+    glColor3f(0,0,0);
+
+    for (ph=-90;ph<90;ph+=5)
+    {
+        glBegin(GL_QUAD_STRIP);
+        for (th=0;th<=360;th+=2*5)
+        {
+            Vertex(th,ph,(r-1.5));
+            Vertex(th,ph+5,(r-1.5));
+        }
+        glEnd();
+    }
+    glPopMatrix();
+
+    // Draw tentacle 1
+    glMaterialfv(GL_FRONT,GL_EMISSION,Emission2);
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,sc,sc);
+    glColor3f(1,0,0);
+    glRotated(-fmod(90*time,360.0),0,1,0);
+
+    double ty = 0, s = r-1;
+    double tx,tz;
+    for (ph=0;ph<3000*sc;ph+=10, ty-=0.05, s-=0.005)
+    {
+        glBegin(GL_POINTS);
+        tx = Sin(ph)*s;
+        tz = Cos(ph)*s;
+        glVertex3d(tx,ty,tz);
+        glEnd();
+    }
+    glPopMatrix();
+
+    // Draw tentacle 2
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,sc,sc);
+    glColor3f(0,1,0);
+    glRotated(fmod(90*time,360.0),0,1,0);
+
+    ty = 0, s = r-1.5;
+    for (ph=0;ph<3000*sc;ph+=10, ty-=0.05, s-=0.003)
+    {
+        glBegin(GL_POINTS);
+        tx = Sin(ph)*s;
+        tz = Cos(ph)*s;
+        glVertex3d(tx,ty,tz);
+        glEnd();
+    }
+    glPopMatrix();
+
+    // Draw tentacle 3
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,sc,sc);
+    glColor3f(1,1,0);
+    glRotated(fmod(90*time,360.0),0,1,0);
+
+    ty = 0, s = r-2;
+    for (ph=0;ph<3000*sc;ph+=10, ty-=0.05, s-=0.002)
+    {
+        glBegin(GL_POINTS);
+        tx = Sin(ph)*s;
+        tz = Cos(ph)*s;
+        glVertex3d(tx,ty,tz);
+        glEnd();
+    }
+    glPopMatrix();
+
+    // Draw outer shell
+    glPushMatrix();
+    glTranslated(x,y+Sin(rh),z);
+    glScaled(sc,sc,sc);
+    glRotated(90,1,0,0);
+    glColor3f(0,0.3,0);
+    glMaterialfv(GL_FRONT,GL_EMISSION,Emission3);    
+    for (ph=-90;ph<50;ph+=5)
+    {
+        glBegin(GL_POINTS);
+        glColor3f(1,1,1);
+        for (th=0;th<=360;th+=2*5)
+        {
+            double lx = Sin(th)*Cos(ph)*r;
+            double ly = Cos(th)*Cos(ph)*r;
+            double lz = Sin(ph)*r;
+            glVertex3d(lx,ly,lz);
+        }
+        glEnd();
+    }
+    glPopMatrix();
+}
+
+
 
 
 /*
@@ -758,6 +959,149 @@ static void ball(double x,double y,double z,double r)
    glColor3f(1,1,1);
    glutSolidSphere(1.0,16,16);
    //  Undo transofrmations
+   glPopMatrix();
+}
+
+
+void draw_fractal(double x0, double y0, double angle0, int level)
+{
+   
+   if(level > levelmax) return;
+   float r = 0.15/pow(factor,level-1);
+   float angle;
+   float x, y, coss, sinn;
+   int i;
+   for(i = 0; i < nleaf; i++)
+   {
+      angle = offset + angle0 + i*2*M_PI/nleaf/openness - (nleaf-1)*2*M_PI/nleaf/openness/2;
+      coss = cos(angle);
+      sinn = sin(angle);
+      x = x0 + r*coss;
+      y = y0 + r*sinn;
+      glBegin(GL_LINES);
+      glVertex2f(x0, y0);
+      glVertex2f(x, y);      
+      
+      glEnd();
+      draw_fractal(x, y, atan2((y-y0), (x-x0)), level+1);
+   }
+}
+
+void Lcounter(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th)
+{
+
+   glPushMatrix();
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   //  Enable textures
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glColor3f(0.5f,0.35f,0.05f);
+   glBindTexture(GL_TEXTURE_2D,texture[3]);
+   //left countertop side
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f(-1,0,0);
+   glTexCoord2f(0,1);glVertex3f(-3, 0, 0);
+   glTexCoord2f(1,1);glVertex3f(-3,0,1);
+   glTexCoord2f(1,0);glVertex3f(-3,-0.16,1);
+   glTexCoord2f(0,0);glVertex3f(-3,-0.16,0);
+   glEnd();
+   //  Front
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,1);glVertex3f(-3,0,+1);
+   glTexCoord2f(1,1);glVertex3f(+1.5,0,+1);
+   glTexCoord2f(1,0);glVertex3f(+1.5,-0.16,+1);
+   glTexCoord2f(0,0);glVertex3f(-3,-0.16,+1);
+   glEnd();
+   //Bottom
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f(0, -1, 0);
+   glTexCoord2f(0,1);glVertex3f(-3,-0.16,+1);
+   glTexCoord2f(1,1);glVertex3f(+1.5,-0.16,+1);
+   glTexCoord2f(1,0);glVertex3f(+1.5,-0.16,-1);
+   glTexCoord2f(0,0);glVertex3f(-3,-0.16,-1);
+   glEnd();
+
+   //  Offset, scale and rotate
+   glScaled(dx,dy,dz); //don't want to scale above
+
+   //  Front
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,1);glVertex3f(-3,0,0);
+   glTexCoord2f(1,1);glVertex3f(+1.5,0,0);
+   glTexCoord2f(1,0);glVertex3f(+1.5,-0.16,0);
+   glTexCoord2f(0,0);glVertex3f(-3,-0.16,0);
+   glEnd();
+
+   //  Right
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f(1/sqrt(2), 0, 1/sqrt(2));
+   glTexCoord2f(0,1);glVertex3f(+1.5,0,0);
+   glTexCoord2f(1,1);glVertex3f(+4,0,-3);
+   glTexCoord2f(1,0);glVertex3f(+4,-0.16,-3);
+   glTexCoord2f(0,0);glVertex3f(+1.5,-0.16,0);
+   glEnd();
+
+    //  Left
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f(-1,0,0);
+   glTexCoord2f(0,1);glVertex3f(-3, 0, -1);
+   glTexCoord2f(1,1);glVertex3f(-3,0,0);
+   glTexCoord2f(1,0);glVertex3f(-3,-0.16,0);
+   glTexCoord2f(0,0);glVertex3f(-3,-0.16,-1);
+   glEnd();
+
+   //  Top
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);
+   glNormal3f(0, 1, 0);
+   glTexCoord2f(0,0);glVertex3f(-3,0,+1);//bottom left
+   glTexCoord2f(1,1);glVertex3f(+1.5,0,+1);//bottom right
+   glTexCoord2f(1,0);glVertex3f(+3,0,-1);//top left
+   glTexCoord2f(0,1);glVertex3f(-3,0,-1);//top left
+   glEnd();
+
+   //parallelogram
+   //top
+   glBegin(GL_QUADS);
+   glColor3f(0.5f, 0.35f, 0.05f);//brown
+   glNormal3f(0,1,0);
+   glTexCoord2f(0,0);glVertex3f(+1,0,-1);
+   glTexCoord2f(1,0);glVertex3f(+3,0,-1);
+   glTexCoord2f(1,1);glVertex3f(+4.5,0,-3);
+   glTexCoord2f(0,1);glVertex3f(+2.5,0,-3);
+   glEnd();
+   //glDisable(GL_TEXTURE_2D);
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glColor3f(1,1,1);
+   glBindTexture(GL_TEXTURE_2D,texture[0]);
+
+   //  Undo transformations and textures
+   glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+
+}
+
+void drawGarage() {
+   glPushMatrix();
+   cube(-1,0,0, 0.15, 1, 1, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
+   cube(1,0,0, 0.15, 1, 1, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
+   cube(0,0,1, 1, 1, 0.15, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
+
+   // roof
+   cube(0,1,0, 1.25, 0.25, 1, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
+   
    glPopMatrix();
 }
 
@@ -955,6 +1299,55 @@ void display()
       cylinder(1.5,3, 0, 0, 0, texture[4]);
       glPopMatrix();
       break;
+   case 7:
+      // seat
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      glScaled(1.5, 1.5, 1.5);      
+      drawSeat();
+      glPopMatrix();
+      break;
+   case 8:
+      // seat
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      glScaled(1.5, 1.5, 1.5);      
+      Lcounter(0,0,0,1,10,1,5);
+      glPopMatrix();
+      break;
+   case 9:
+      // seat
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      glScaled(0.5,0.5,0.5);      
+      drawChandelier(0,0,0,2.5,fmod(120*time,360.0),1,fmod(90*time,360.0));
+      glPopMatrix();
+      break;
+   case 10:
+      // seat
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      glScaled(0.5,0.5,0.5);      
+      drawVase(0,0,0,2.5,fmod(120*time,360.0),1,fmod(90*time,360.0));
+      glScaled(8,8,8);      
+      draw_fractal(0,0.45, M_PI/2, 1);
+      glPopMatrix();
+      break;
+   case 11:
+      // fractal
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      glScaled(8,8,8);      
+      draw_fractal(0,0, M_PI/2, 1);
+      glPopMatrix();
+      break;
+   case 12:
+      // garage
+      glPushMatrix();
+      glTranslated(0,0, 0);
+      drawGarage();
+      glPopMatrix();
+      break;
    }
 
 
@@ -1039,6 +1432,8 @@ void special(int key,int x,int y)
    glutPostRedisplay();
 }
 
+
+
 /*
  *  GLUT calls this routine when a key is pressed
  */
@@ -1064,7 +1459,8 @@ void key(unsigned char ch,int x,int y)
       ntex = 1-ntex;
    //  Cycle objects
    else if (ch == 'o' || ch == 'O')
-      obj = (obj+1)%7;
+      //  objects
+      obj = (obj+1)%13;
    //  Light elevation
    else if (ch=='[')
       ylight -= 0.1;
