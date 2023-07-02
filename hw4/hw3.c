@@ -24,12 +24,12 @@
 int mode=0;       //  Texture mode
 int ntex=0;       //  Cube faces
 int axes=1;       //  Display axes
-int th=180;         //  Azimuth of view angle
+int th=360;         //  Azimuth of view angle
 int ph=50;         //  Elevation of view angle
 int light=1;      //  Lighting
 int rep=1;        //  Repitition
 double asp=1;     //  Aspect ratio
-double dim=12.5;   //  Size of world
+double dim=20.5;   //  Size of world
 // Light values
 int emission  =   0;  // Emission intensity (%)
 int ambient   =  30;  // Ambient intensity (%)
@@ -39,7 +39,7 @@ int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;    // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   3;  // Elevation of light
-unsigned int texture[9]; // Texture names
+unsigned int texture[20]; // Texture names
 double roomWidth = 10;
 double roomHeight = 6.0;
 int t_mode = 0;	
@@ -53,7 +53,9 @@ float openness = 4.5; // controls how open the leafs are
 float factor = 1.5; // controls how fast branch sizes decrease
 float zoom = 1; // zoom of visualization
 float offset = 0; // controls how crooked branches are   
-
+int    sky[2];   //  Sky textures
+int objList;     // Object display list
+float RGBA[4] = {1,1,1,1};  //  Colors
 
 void cylinder(float radius,float height,
                    float R, float G,float B, unsigned int texture){
@@ -90,6 +92,55 @@ void cylinder(float radius,float height,
       glTexCoord2f(0.0, 0.0); glVertex3f(radius, 0.0, 0.0);
    }
    glEnd(); 
+}
+
+/* 
+ *  Draw sky box
+ */
+static void Sky(double D)
+{
+   //  Textured white box dimension (-D,+D)
+   glPushMatrix();
+   glScaled(D,D,D);
+   glEnable(GL_TEXTURE_2D);
+   glColor3f(1,1,1);
+
+   //  Sides
+   glBindTexture(GL_TEXTURE_2D,sky[0]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.00,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(0.25,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(0.25,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0.00,1); glVertex3f(-1,+1,-1);
+
+   glTexCoord2f(0.25,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(0.50,0); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0.50,1); glVertex3f(+1,+1,+1);
+   glTexCoord2f(0.25,1); glVertex3f(+1,+1,-1);
+
+   glTexCoord2f(0.50,0); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0.75,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(0.75,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0.50,1); glVertex3f(+1,+1,+1);
+
+   glTexCoord2f(0.75,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1.00,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1.00,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0.75,1); glVertex3f(-1,+1,+1);
+   glEnd();
+
+   //  Top and bottom
+   glBindTexture(GL_TEXTURE_2D,sky[1]);
+   glBegin(GL_QUADS);
+   glTexCoord2f(0.0,0); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0.5,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(0.5,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0.0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+
+   //  Undo
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
 }
 
 void drawSeat() {
@@ -790,6 +841,94 @@ static void drawHouse(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
 {
+
+// draw bathtub
+      glPushMatrix();
+      glTranslated(3.3, 1.08, 1.8);
+      glScaled(0.5,0.5,1);   
+      bathtub(0,0,0,1);
+      glPopMatrix();  
+
+      // draw lamps
+      glPushMatrix();
+      glTranslated(-3.75, 0.5, -2.25);
+      glScaled(0.25,0.25,0.25);
+      drawLamp();
+      glPopMatrix();  
+
+      glPushMatrix();
+      glTranslated(-3.75, 0.5, -3.75);
+      glScaled(0.35,0.45,0.5);
+      drawLamp();
+      glPopMatrix();  
+
+      // Draw side tables
+      glPushMatrix();
+      glTranslated(-3.9, 0.0, -2.5);   
+      glScaled(0.25,0.25, 0.25);
+      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[6], 1,1,1,1,1,1);
+      glPopMatrix();
+
+      glPushMatrix();
+      glTranslated(-3.9, 0.0, -4);   
+      glScaled(0.25,0.25, 0.25);
+      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[6], 1,1,1,1,1,1);
+      glPopMatrix();
+      
+      // draw bed
+      glPushMatrix();
+      glTranslated(-2.8, 0.0, -3);   
+      glRotated(90.0,0,1,0);
+      glScaled(0.8, 0.35, 2);
+      drawChair(0.523, 0.442, 0.161);
+      glPopMatrix();
+
+      // dining table
+      glPushMatrix();
+      glTranslated(2, 0.0, -2);   
+      glRotated(90.0,0,1,0);
+      glScaled(0.5, 0.5, 0.5);
+      drawTable(0.27,0.027,0.035);
+      glPopMatrix();
+
+      // living room table
+      glPushMatrix();
+      glTranslated(-2.3, 0.0, 2.5);      
+      glScaled(0.5, 0.5, 0.45);
+      drawTable(0.42, 0.42, 0.42);
+      glPopMatrix();
+
+      // draw tv
+      glPushMatrix();
+      glTranslated(-2.67, 1.35, 2.75);      
+      glScaled(0.55,0.25, 0.09);
+      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[7], 1,1,1,1,1,1);
+      glPopMatrix();
+
+      
+      // Sofa
+      glPushMatrix();
+      glTranslated(-2.3, 0.0,1);
+      glScaled(1.35, 0.5, 0.5);
+      drawChair(0.162, 0.252, 0.291);
+      glPopMatrix();
+
+      // chair
+      glPushMatrix();
+      glTranslated(2, 0.0, -3);
+      glScaled(0.5, 0.5, 0.5);
+      drawChair(0.38, 0.38, 0.38);
+      glPopMatrix();
+
+      // chair
+      glPushMatrix();
+      glTranslated(2, 0.0, -1);
+      glRotated(180,0,1,0);
+      glScaled(0.5, 0.5, 0.5);
+      drawChair(0.38, 0.38, 0.38);
+      glPopMatrix();
+
+
    //  Set specular color to white
    float white[] = {1,1,1,1};
    float Emission[]  = {0.0,0.0,0.01*emission,1.0};
@@ -941,6 +1080,31 @@ static void drawHouse(double x,double y,double z,
    //  Undo transformations and textures
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
+}
+
+void renderTrees() {
+   glDisable(GL_BLEND);
+   glEnable(GL_TEXTURE_2D);
+   glColor3f(0,1,0.5);
+   glPushMatrix();
+   glScaled(0.5,0.5,0.5);
+   glTranslated(-45,0,-40);
+   glCallList(objList);
+   glPopMatrix();
+
+   glPushMatrix();
+   glScaled(0.5,0.5,0.5);
+   glTranslated(20,0,0);
+   glCallList(objList);
+   glPopMatrix();
+
+   glPushMatrix();
+   glScaled(0.5,0.5,0.5);
+   glTranslated(-40,0,30);
+   glCallList(objList);
+   glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+
 }
 
 /*
@@ -1100,7 +1264,7 @@ void drawGarage() {
    cube(0,0,1, 1, 1, 0.15, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
 
    // roof
-   cube(0,1,0, 1.25, 0.25, 1, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
+   cube(0,1,0, 1.25, 0.25, 1.25, 1, 1, 1, 1, texture[4], 1,1,1,1,1,1);
    
    glPopMatrix();
 }
@@ -1121,6 +1285,7 @@ void display()
    //  Set perspective
    glLoadIdentity();
    gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   glUseProgram(0);
    //  Light switch
    if (light)
    {
@@ -1129,8 +1294,12 @@ void display()
       float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
       float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
       //  Light direction
-      float Position[]  = {5*Cos(zh),ylight,5*Sin(zh),1};
+      float Position[]  = {20*Cos(zh),ylight,15*Sin(zh),1};
+      float Shinyness[] = {16};
+      float Emission[]  = {0.0,0.0,0.0,1.0};
       //  Draw light position as ball (still no lighting here)
+      glPushMatrix();
+      glTranslated(-8, 0, 0);
       // sun
       glColor3f(1,1,1);
       ball(Position[0],Position[1],Position[2] , 0.1);
@@ -1138,6 +1307,8 @@ void display()
       // Moon
       glRotated(180, 0, 1, 0);
       ball(Position[0],Position[1],Position[2] , 0.1);
+
+      glPopMatrix();
       //  OpenGL should normalize normal vectors
       glEnable(GL_NORMALIZE);
       //  Enable lighting
@@ -1152,6 +1323,15 @@ void display()
       glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
       glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
+
+
+
+      glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,Shinyness);
+      glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,RGBA);
+      glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,RGBA);
+      glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+      glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+
    }
    else{
       glDisable(GL_LIGHTING);
@@ -1159,95 +1339,26 @@ void display()
    
    switch (obj) {
    //  Draw scene
-   case 0:
+   case 0:   
+      renderTrees();
       drawHouse(0,0.1,0 , 0.5,0.5,0.5 , 0);
-      drawGrass(0,0,0 , 1.25,1.25,1.25 , 0);
+      drawHouse(0,0.1,14 , 0.5,0.5,0.5 , 0);
+      drawHouse(0,0.1,-14 , 0.5,0.5,0.5 , 0);
 
-      // draw bathtub
-      glPushMatrix();
-      glTranslated(3.3, 1.08, 1.8);
-      glScaled(0.5,0.5,1);   
-      bathtub(0,0,0,1);
-      glPopMatrix();  
-
-      // draw lamps
-      glPushMatrix();
-      glTranslated(-3.75, 0.5, -2.25);
-      glScaled(0.25,0.25,0.25);
-      drawLamp();
-      glPopMatrix();  
-
-      glPushMatrix();
-      glTranslated(-3.75, 0.5, -3.75);
-      glScaled(0.35,0.45,0.5);
-      drawLamp();
-      glPopMatrix();  
-
-      // Draw side tables
-      glPushMatrix();
-      glTranslated(-3.9, 0.0, -2.5);   
-      glScaled(0.25,0.25, 0.25);
-      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[6], 1,1,1,1,1,1);
-      glPopMatrix();
-
-      glPushMatrix();
-      glTranslated(-3.9, 0.0, -4);   
-      glScaled(0.25,0.25, 0.25);
-      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[6], 1,1,1,1,1,1);
-      glPopMatrix();
+      // Draw road
+      cube(-7,0,0, 1, 0.1, 20, 1, 1, 1, 1, texture[10], 1,1,1,1,1,1);
       
-      // draw bed
-      glPushMatrix();
-      glTranslated(-2.8, 0.0, -3);   
-      glRotated(90.0,0,1,0);
-      glScaled(0.8, 0.35, 2);
-      drawChair(0.523, 0.442, 0.161);
-      glPopMatrix();
+      // draw horizontal road
+      cube(-5,0,6, 20, 0.1, 1, 1, 1, 1, 1, texture[10], 1,1,1,1,1,1);
+      cube(-5,0,-9, 20, 0.1, 1, 1, 1, 1, 1, texture[10], 1,1,1,1,1,1);
 
-      // dining table
-      glPushMatrix();
-      glTranslated(2, 0.0, -2);   
-      glRotated(90.0,0,1,0);
-      glScaled(0.5, 0.5, 0.5);
-      drawTable(0.27,0.027,0.035);
-      glPopMatrix();
+      drawHouse(-14,0.1,0 , 0.5,0.5,0.5 , 0);
+      drawHouse(-14,0.1,14 , 0.5,0.5,0.5 , 0);
+      drawHouse(-14,0.1,-14 , 0.5,0.5,0.5 , 0);
 
-      // living room table
-      glPushMatrix();
-      glTranslated(-2.3, 0.0, 2.5);      
-      glScaled(0.5, 0.5, 0.45);
-      drawTable(0.42, 0.42, 0.42);
-      glPopMatrix();
-
-      // draw tv
-      glPushMatrix();
-      glTranslated(-2.67, 1.35, 2.75);      
-      glScaled(0.55,0.25, 0.09);
-      cube(1,1,1, 1, 1, 1, 1, 1, 1, 1, texture[7], 1,1,1,1,1,1);
-      glPopMatrix();
-
-      
-      // Sofa
-      glPushMatrix();
-      glTranslated(-2.3, 0.0,1);
-      glScaled(1.35, 0.5, 0.5);
-      drawChair(0.162, 0.252, 0.291);
-      glPopMatrix();
-
-      // chair
-      glPushMatrix();
-      glTranslated(2, 0.0, -3);
-      glScaled(0.5, 0.5, 0.5);
-      drawChair(0.38, 0.38, 0.38);
-      glPopMatrix();
-
-      // chair
-      glPushMatrix();
-      glTranslated(2, 0.0, -1);
-      glRotated(180,0,1,0);
-      glScaled(0.5, 0.5, 0.5);
-      drawChair(0.38, 0.38, 0.38);
-      glPopMatrix();
+      drawGrass(0,0,0 , 8,8,8 , 0);
+      glTranslated(0,40, 0);
+      Sky(3.5*dim);
       break;
 
    case 1:
@@ -1316,7 +1427,7 @@ void display()
       glPopMatrix();
       break;
    case 9:
-      // seat
+      // Chandelier
       glPushMatrix();
       glTranslated(0,0, 0);
       glScaled(0.5,0.5,0.5);      
@@ -1324,7 +1435,7 @@ void display()
       glPopMatrix();
       break;
    case 10:
-      // seat
+      // vase
       glPushMatrix();
       glTranslated(0,0, 0);
       glScaled(0.5,0.5,0.5);      
@@ -1349,9 +1460,7 @@ void display()
       glPopMatrix();
       break;
    }
-
-
-
+   
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
    glColor3f(1,1,1);
@@ -1382,6 +1491,7 @@ void display()
       glWindowPos2i(5,25);
       Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
    }
+
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -1395,7 +1505,7 @@ void idle()
 {
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t,360.0);
+   zh = fmod(45*t,360.0);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -1460,7 +1570,7 @@ void key(unsigned char ch,int x,int y)
    //  Cycle objects
    else if (ch == 'o' || ch == 'O')
       //  objects
-      obj = (obj+1)%13;
+      obj = (obj+1)%14;
    //  Light elevation
    else if (ch=='[')
       ylight -= 0.1;
@@ -1548,7 +1658,20 @@ int main(int argc,char* argv[])
    texture[6] = LoadTexBMP("crate.bmp");
    texture[7] = LoadTexBMP("sky0.bmp");
    texture[8] = LoadTexBMP("water.bmp");
-   //  Pass control to GLUT so it can interact with the user
+   texture[9] = LoadTexBMP("sky1.bmp"); 
+   texture[10] = LoadTexBMP("road.bmp");
+
+   sky[0] = LoadTexBMP("sky.bmp");
+   sky[1] = LoadTexBMP("sky1.bmp");
+   int scale = 1;
+   if (argc >= 3)
+      scale = strtod(argv[2], NULL);
+   if (scale<=0) scale = 1;
+   //  Set color
+   if (argc>=6) RGBA[0] = strtod(argv[3],NULL);
+   if (argc>=6) RGBA[1] = strtod(argv[4],NULL);
+   if (argc>=6) RGBA[2] = strtod(argv[5],NULL);
+   objList = LoadOBJ("Lowpoly_tree_sample.obj");
    ErrCheck("init");
    glutMainLoop();
    return 0;
