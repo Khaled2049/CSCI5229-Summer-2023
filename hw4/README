@@ -1,27 +1,49 @@
-Homework 3: Lighting and Textures
+Homework 4: Review
+
+Things I have added so far
+
+1. 6 houses
+2. Multiple furniture (which can be cycled through by pressing o)
+3. Roads
+4. Trees
+5. Sun and moon
+
+Things I need to before final submission
+
+1. Add texture to Trees
+2. Add first person movement
+3. Add more furniture to houses
+4. Need to fix position of sun and moon and have different lighting based on day and night
+5. Add Lake
+6. Add bird sounds
+7. Add gate to town
+8. Add Humans
+
+To run the program:
+
+- make
+- ./hw3.exe
 
 Khaled hossain
 CSCI4229/5229 Summer 2023
 
-
 Demonstrates using lighting and textures.
 
-
 Key bindings
-  l          Toggle lighting on/off
-  t          Change textures
-  m          Toggles texture mode modulate/replace
-  a/A        decrease/increase ambient light
-  d/D        decrease/increase diffuse light
-  s/S        decrease/increase specular light
-  e/E        decrease/increase emitted light
-  n/N        Decrease/increase shininess
-  o          Cycles through objects
-  []         Lower/rise light
-  x          Toggle axes
-  arrows     Change view angle
-  PgDn/PgUp  Zoom in and out
-  0          Reset view angle
-  ESC        Exit
+l Toggle lighting on/off
+t Change textures
+m Toggles texture mode modulate/replace
+a/A decrease/increase ambient light
+d/D decrease/increase diffuse light
+s/S decrease/increase specular light
+e/E decrease/increase emitted light
+n/N Decrease/increase shininess
+o Cycles through objects
+[] Lower/rise light
+x Toggle axes
+arrows Change view angle
+PgDn/PgUp Zoom in and out
+0 Reset view angle
+ESC Exit
 
-Time taken to complete 10 hours
+Time taken to complete 20 hours

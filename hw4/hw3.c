@@ -24,7 +24,7 @@
 int mode=0;       //  Texture mode
 int ntex=0;       //  Cube faces
 int axes=1;       //  Display axes
-int th=360;         //  Azimuth of view angle
+int th=180;         //  Azimuth of view angle
 int ph=50;         //  Elevation of view angle
 int light=1;      //  Lighting
 int rep=1;        //  Repitition
@@ -1273,7 +1273,7 @@ void drawGarage() {
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 void display()
-{
+{   
    //  Eye position
    double Ex = -2*dim*Sin(th)*Cos(ph);
    double Ey = +2*dim        *Sin(ph);
@@ -1301,14 +1301,19 @@ void display()
       glPushMatrix();
       glTranslated(-8, 0, 0);
       // sun
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D,texture[11]);
       glColor3f(1,1,1);
-      ball(Position[0],Position[1],Position[2] , 0.1);
-
+      ball(Position[0],Position[1],Position[2] , 2);
+      
       // Moon
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D,texture[12]);
       glRotated(180, 0, 1, 0);
-      ball(Position[0],Position[1],Position[2] , 0.1);
-
+      ball(Position[0],Position[1],Position[2] , 1);
+      glDisable(GL_TEXTURE_2D);
       glPopMatrix();
+
       //  OpenGL should normalize normal vectors
       glEnable(GL_NORMALIZE);
       //  Enable lighting
@@ -1525,7 +1530,7 @@ void special(int key,int x,int y)
    else if (key == GLUT_KEY_UP)
       ph += 5;
    //  Down arrow key - decrease elevation by 5 degrees
-   else if (key == GLUT_KEY_DOWN)
+   else if (key == GLUT_KEY_DOWN && ph>5)
       ph -= 5;
    //  PageUp key - increase dim
    else if (key == GLUT_KEY_PAGE_DOWN)
@@ -1660,6 +1665,8 @@ int main(int argc,char* argv[])
    texture[8] = LoadTexBMP("water.bmp");
    texture[9] = LoadTexBMP("sky1.bmp"); 
    texture[10] = LoadTexBMP("road.bmp");
+   texture[11] = LoadTexBMP("sun.bmp");
+   texture[12] = LoadTexBMP("moon.bmp");
 
    sky[0] = LoadTexBMP("sky.bmp");
    sky[1] = LoadTexBMP("sky1.bmp");
