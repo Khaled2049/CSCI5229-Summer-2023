@@ -1,0 +1,35 @@
+Homework 5: Final
+
+To run the program:
+
+- make
+- ./final.exe
+
+Khaled hossain
+CSCI4229/5229 Summer 2023
+
+My final project draws a fictional town with textures, lightings, day & night mode and different objects
+
+Key bindings
+c to change camera mode
+t to toggle roof
+r to view room
+n to toggle day and night
+w, a, d, f to move in first person
+l Toggle lighting on/off
+t Change textures
+m Toggles texture mode modulate/replace
+a/A decrease/increase ambient light
+d/D decrease/increase diffuse light
+s/S decrease/increase specular light
+e/E decrease/increase emitted light
+n/N Decrease/increase shininess
+o Cycles through objects
+[] Lower/rise light
+x Toggle axes
+arrows Change view angle
+PgDn/PgUp Zoom in and out
+0 Reset view angle
+ESC Exit
+
+Time taken to complete 30 hours
